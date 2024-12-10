@@ -1,15 +1,15 @@
 public class KnapsackSolver {
     public static void main(String[] args) {
         // Number of items
-        int n = 5;
+        int n = 10;
         // Number of knapsacks
         int m = 2;
         // Values of items
-        int[] values = { 60, 100, 120, 80, 50 };
+        int[] values = { 100, 90, 60, 40, 60, 50, 70, 20, 10, 30 };
         // Weights of items
-        int[] weights = { 10, 20, 30, 15, 10 };
+        int[] weights = { 50, 40, 30, 10, 20, 10, 30, 10, 5, 20 };
         // Capacities of knapsacks
-        int[] capacities = { 50, 50 };
+        int[] capacities = { 100, 100 };
 
         // Call the greedy algorithm
         int[][] greedySolution = greedyKnapsack(n, m, values, weights, capacities);
@@ -64,20 +64,19 @@ public class KnapsackSolver {
             int[][] bestNeighbor = deepCopy(currentSolution);
             int bestValue = currentValue;
 
-            // Check neighbors by moving items between knapsacks
+            // Explore neighbors
             for (int j1 = 0; j1 < m; j1++) {
-                for (int i = 0; i < n; i++) {
-                    if (currentSolution[j1][i] == 1) {
+                for (int i1 = 0; i1 < n; i1++) {
+                    if (currentSolution[j1][i1] == 1) {
+                        // Move item from one knapsack to another
                         for (int j2 = 0; j2 < m; j2++) {
-                            if (j1 != j2 && weights[i] <= capacities[j2]) {
-                                // Create a neighbor by moving item i
+                            if (j1 != j2 && weights[i1] <= capacities[j2]) {
                                 int[][] neighbor = deepCopy(currentSolution);
-                                neighbor[j1][i] = 0; // Remove from knapsack j1
-                                neighbor[j2][i] = 1; // Add to knapsack j2
+                                neighbor[j1][i1] = 0; // Remove from knapsack j1
+                                neighbor[j2][i1] = 1; // Add to knapsack j2
 
-                                // Calculate neighbor's value
                                 int neighborValue = calculateTotalValue(neighbor, values);
-                                if (neighborValue > bestValue) {
+                                if (isValidSolution(neighbor, weights, capacities) && neighborValue > bestValue) {
                                     bestValue = neighborValue;
                                     bestNeighbor = deepCopy(neighbor);
                                     improved = true;
@@ -87,11 +86,33 @@ public class KnapsackSolver {
                     }
                 }
             }
+
+            // Update solution
             currentSolution = deepCopy(bestNeighbor);
             currentValue = bestValue;
+
+            // Debugging
+            System.out.println("Current Value: " + currentValue);
+            printSolution(currentSolution);
         }
+
         return currentSolution;
     }
+    public static boolean isValidSolution(int[][] solution, int[] weights, int[] capacities) {
+        for (int j = 0; j < solution.length; j++) {
+            int totalWeight = 0;
+            for (int i = 0; i < solution[j].length; i++) {
+                if (solution[j][i] == 1) {
+                    totalWeight += weights[i];
+                }
+            }
+            if (totalWeight > capacities[j]) {
+                return false; // Exceeds capacity
+            }
+        }
+        return true;
+    }
+    
 
     private static int calculateTotalValue(int[][] solution, int[] values) {
         int totalValue = 0;
